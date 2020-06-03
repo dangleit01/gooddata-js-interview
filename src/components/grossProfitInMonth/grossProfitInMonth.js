@@ -2,10 +2,39 @@ import React, { Component } from 'react';
 import { ColumnChart } from '@gooddata/react-components';
 import moment from 'moment';
 import './grossProfitInMonth.css';
+import { ProjectId, Measures } from '../../utils/gooddataUtils';
 
 const dateAttribute = '/gdc/md/xms7ga4tf3g3nzucd8380o2bev8oeknp/obj/2180';
-const monthHaving31Days = [1, 3, 5, 7, 8, 10, 12];
+const monthHaving31Days = ['01', '03', '05', '07', '08', '10', '12'];
 const year2016 = 2016;
+
+export const fromDay = (selectedMonth) => {
+    return moment(year2016 + '-' + selectedMonth + '-01').format('YYYY-MM-DD');
+}
+
+export const toDay = (selectedMonth) => {
+    let endDayOfMonth = 30;
+    
+    if(selectedMonth === '02') {
+        endDayOfMonth = 29;
+    } else if (monthHaving31Days.some(item => {
+        return selectedMonth === item;})) {
+        endDayOfMonth = 31;
+    }
+    return moment(year2016 + '-' + selectedMonth + '-' + endDayOfMonth).format('YYYY-MM-DD');
+}
+
+export const getMonthFilter = (selectedMonth) => {
+    return {
+        absoluteDateFilter: {
+            dataSet: {
+                uri: dateAttribute
+            },
+            from: fromDay(selectedMonth),
+            to: toDay(selectedMonth)
+        }
+    }
+}
 
 class GrossProfitInMonth extends Component {
     
@@ -13,37 +42,8 @@ class GrossProfitInMonth extends Component {
         super(pros);
         this.handleMonthDropdownChange = this.handleMonthDropdownChange.bind(this);
         this.state = {
-            selectedMonth: 1
+            selectedMonth: '01'
         };
-    }
-
-    getFromDay() {
-        return moment(year2016 + '-' + this.state.selectedMonth.toString() + '-01').format('YYYY-MM-DD');
-    }
-
-    getToDay() {
-        let endDayOfMonth = 30;
-        const selectedMonth = this.state.selectedMonth;
-        
-        if(selectedMonth == 2) {
-            endDayOfMonth = 29;
-        } else if (monthHaving31Days.some(item => {
-            return selectedMonth == item;})) {
-            endDayOfMonth = 31;
-        }
-        return moment(year2016 + '-' + this.state.selectedMonth.toString() + '-' + endDayOfMonth).format('YYYY-MM-DD');
-    }
-    
-    getMonthFilter() {
-        return {
-            absoluteDateFilter: {
-                dataSet: {
-                    uri: dateAttribute
-                },
-                from: this.getFromDay(),
-                to: this.getToDay()
-            }
-        }
     }
 
     handleMonthDropdownChange(event) {
@@ -54,16 +54,16 @@ class GrossProfitInMonth extends Component {
 
     renderDropdown() {
         return (
-            <select defaultValue="1" onChange={this.handleMonthDropdownChange}>
-                <option value="1">January</option>
-                <option value="2">February</option>
-                <option value="3">March</option>
-                <option value="4">April</option>
-                <option value="5">May</option>
-                <option value="6">June</option>
-                <option value="7">July</option>
-                <option value="8">August</option>
-                <option value="9">September</option>
+            <select defaultValue="01" onChange={this.handleMonthDropdownChange}>
+                <option value="01">January</option>
+                <option value="02">February</option>
+                <option value="03">March</option>
+                <option value="04">April</option>
+                <option value="05">May</option>
+                <option value="06">June</option>
+                <option value="07">July</option>
+                <option value="08">August</option>
+                <option value="09">September</option>
                 <option value="10">October</option>
                 <option value="11">November</option>
                 <option value="12">December</option>
@@ -72,17 +72,16 @@ class GrossProfitInMonth extends Component {
     }
 
     render() {
-        const projectId = this.props.projectId;
-        const filters = [this.getMonthFilter()];
-        const measures = this.props.measures;
+        const filters = [getMonthFilter(this.state.selectedMonth)];
+        
         return (
             <div className='GrossProfitInMonth'>
                 <h1>$ Gross Profit in month {this.renderDropdown()} 2016</h1>
                 <div>
                     <ColumnChart
-                        measures={measures}
+                        measures={Measures}
                         filters={filters}
-                        projectId={projectId}
+                        projectId={ProjectId}
                     />
                 </div>
             </div>
